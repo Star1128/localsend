@@ -17,6 +17,7 @@ import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/widget/dialogs/address_input_dialog.dart';
 import 'package:localsend_app/widget/dialogs/favorite_dialog.dart';
 import 'package:localsend_app/widget/dialogs/no_files_dialog.dart';
+import 'package:localsend_app/widget/dialogs/qr_scan_dialog.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
 
@@ -28,6 +29,7 @@ class SendTabVm {
   final List<FavoriteDevice> favoriteDevices;
   final Future<void> Function(BuildContext context) onTapAddress;
   final Future<void> Function(BuildContext context) onTapFavorite;
+  final Future<void> Function(BuildContext context) onTapScan;
   final Future<void> Function(BuildContext context, SendMode mode) onTapSendMode;
   final Future<void> Function(Device device) onToggleFavorite;
   final Future<void> Function(BuildContext context, Device device) onTapDevice;
@@ -41,6 +43,7 @@ class SendTabVm {
     required this.favoriteDevices,
     required this.onTapAddress,
     required this.onTapFavorite,
+    required this.onTapScan,
     required this.onTapSendMode,
     required this.onToggleFavorite,
     required this.onTapDevice,
@@ -96,6 +99,25 @@ final sendTabVmProvider = ViewProvider((ref) {
               files: files,
               background: false,
             );
+      }
+    },
+    onTapScan: (context) async {
+      final device = await showDialog<Device?>(
+        context: context,
+        builder: (_) => const QRScanDialog(),
+      );
+      if (device != null && context.mounted) {
+        final files = ref.read(selectedSendingFilesProvider);
+        if (files.isEmpty) {
+          await context.pushBottomSheet(() => const NoFilesDialog());
+          return;
+        }
+
+        await ref.notifier(sendProvider).startSession(
+          target: device,
+          files: files,
+          background: false,
+        );
       }
     },
     onTapSendMode: (context, mode) async {

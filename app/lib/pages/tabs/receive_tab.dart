@@ -11,6 +11,8 @@ import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/local_send_logo.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
 
@@ -52,13 +54,16 @@ class ReceiveTab extends StatelessWidget {
                             ),
                             FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Text(vm.serverState?.alias ?? vm.aliasSettings, style: const TextStyle(fontSize: 48)),
+                              child:
+                                  Text(vm.serverState?.alias ?? vm.aliasSettings, style: const TextStyle(fontSize: 48)),
                             ),
                             InitialFadeTransition(
                               duration: const Duration(milliseconds: 300),
                               delay: const Duration(milliseconds: 500),
                               child: Text(
-                                vm.serverState == null ? t.general.offline : vm.localIps.map((ip) => '#${ip.visualId}').toSet().join(' '),
+                                vm.serverState == null
+                                    ? t.general.offline
+                                    : vm.localIps.map((ip) => '#${ip.visualId}').toSet().join(' '),
                                 style: const TextStyle(fontSize: 24),
                                 textAlign: TextAlign.center,
                               ),
@@ -106,43 +111,62 @@ class ReceiveTab extends StatelessWidget {
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(15),
-                  child: Table(
-                    columnWidths: const {
-                      0: IntrinsicColumnWidth(),
-                      1: IntrinsicColumnWidth(),
-                      2: IntrinsicColumnWidth(),
-                    },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      TableRow(
+                      Table(
+                        columnWidths: const {
+                          0: IntrinsicColumnWidth(),
+                          1: IntrinsicColumnWidth(),
+                          2: IntrinsicColumnWidth(),
+                        },
                         children: [
-                          Text(t.receiveTab.infoBox.alias),
-                          const SizedBox(width: 10),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 30),
-                            child: SelectableText(vm.serverState?.alias ?? '-'),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          Text(t.receiveTab.infoBox.ip),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          TableRow(
                             children: [
-                              if (vm.localIps.isEmpty) Text(t.general.unknown),
-                              ...vm.localIps.map((ip) => SelectableText(ip)),
+                              Text(t.receiveTab.infoBox.alias),
+                              const SizedBox(width: 10),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 30),
+                                child: SelectableText(vm.serverState?.alias ?? '-'),
+                              ),
+                            ],
+                          ),
+                          TableRow(
+                            children: [
+                              Text(t.receiveTab.infoBox.ip),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (vm.localIps.isEmpty) Text(t.general.unknown),
+                                  ...vm.localIps.map((ip) => SelectableText(ip)),
+                                ],
+                              ),
+                            ],
+                          ),
+                          TableRow(
+                            children: [
+                              Text(t.receiveTab.infoBox.port),
+                              const SizedBox(width: 10),
+                              SelectableText(vm.serverState?.port.toString() ?? '-'),
                             ],
                           ),
                         ],
                       ),
-                      TableRow(
-                        children: [
-                          Text(t.receiveTab.infoBox.port),
-                          const SizedBox(width: 10),
-                          SelectableText(vm.serverState?.port.toString() ?? '-'),
-                        ],
-                      ),
+                      QrImageView(
+                        data: vm.localIps.map((ip) => '$ip:${vm.serverState?.port.toString() ?? '-'} ').toString(),
+                        version: QrVersions.auto,
+                        size: 150,
+                        gapless: false,
+                        errorStateBuilder: (cxt, err) {
+                          return const Center(
+                            child: Text(
+                              'Uh oh! Something went wrong...',
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        },
+                      )
                     ],
                   ),
                 ),

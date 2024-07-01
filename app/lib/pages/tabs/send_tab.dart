@@ -183,6 +183,13 @@ class SendTab extends StatelessWidget {
                   ),
                 ),
                 Tooltip(
+                  message: t.dialogs.qr.title,
+                  child: CustomIconButton(
+                    onPressed: () async => await vm.onTapScan(context),
+                    child: const Icon(Icons.qr_code_scanner),
+                  ),
+                ),
+                Tooltip(
                   message: t.dialogs.favoriteDialog.title,
                   child: CustomIconButton(
                     onPressed: () async => await vm.onTapFavorite(context),
